@@ -9,18 +9,18 @@ namespace FirstGearGames.FPSLand.Characters.Motors
 {
 
     /// <summary>
-    ///控制 transform 的观察方向并为摄像机提供信息。
+    /// 控制 transform 的观察方向并为摄像机提供信息。
     /// </summary>
     public class Looking : NetworkBehaviour
     {
 
         #region Public.
         /// <summary>
-        /// Current direction the camera should be looking.
+        /// 当前相机应该看向的方向。
         /// </summary>
         public Vector3 _lookDirection { get; private set; }
         /// <summary>
-        /// Current position the camera should be.
+        /// 相机当前应该处于的位置。
         /// </summary>
         public Vector3 LookPosition { get; private set; }
         #endregion
@@ -29,29 +29,29 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         [SerializeField]
         private Transform _thirdPersonHipBone;
         /// <summary>
-        /// Offset camera should be from this transform.
+        /// 相机的偏移位置（相对于当前transform）
         /// </summary>
         [Tooltip("Offset camera should be from this transform.")]
         [SerializeField]
         private Vector3 _cameraOffset = new Vector3(0f, 1.55f, 0f);
         /// <summary>
-        /// 
+        /// 本地位置偏移，第一人称手臂应该在相机下方。
         /// </summary>
         [Tooltip("Local positional offset first person arms should be under camera.")]
         [SerializeField]
         private Vector3 _firstPersonPositionalOffset = new Vector3(0f, 1.55f, 0f);
         /// <summary>
-        /// Local positional offset first person arms should be under camera.
+        /// 本地位置偏移，第一人称手臂应该在相机下方。
         /// </summary>
         public Vector3 FirstPersonPositionalOffset { get { return _firstPersonPositionalOffset; } }
         /// <summary>
-        /// 
+        /// 本地旋转偏移，第一人称手臂应该在相机下方。
         /// </summary>
         [Tooltip("Local rotational offset first person arms should be under the camera.")]
         [SerializeField]
         private Vector3 _firstPersonRotationalOffset = Vector3.zero;
         /// <summary>
-        /// Local rotational offset first person arms should be under the camera.
+        /// 本地旋转偏移，第一人称手臂应该在相机下方。
         /// </summary>
         public Vector3 FirstPersonRotaionalOffset { get { return _firstPersonRotationalOffset; } }
         /// <summary>
@@ -73,10 +73,6 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         /// Health component on this object.
         /// </summary>
         private Health _health;
-        /// <summary>
-        /// Offset to apply towards lookDirection.
-        /// </summary>
-        private Vector3 _lookDirectionOffset;
         /// <summary>
         /// AnimatorController on this object.
         /// </summary>
@@ -119,7 +115,6 @@ namespace FirstGearGames.FPSLand.Characters.Motors
                 _health = GetComponent<Health>();
                 _health.OnRespawned += Health_OnRespawn;
             }
-            //If server or spectator. Separate if statement for client host.
             if (!base.IsOwner || base.IsServer)
             {
                 _animatorController = GetComponent<AnimatorController>();
@@ -136,7 +131,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         }
 
         /// <summary>
-        /// Checks if owner should send pitch to the server.
+        /// 检查 owner 是否应该将数据发送到服务器。
         /// </summary>
         [Client(Logging = LoggingType.Off)]
         private void CheckSendSpectatorPitch()
@@ -148,7 +143,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         }
 
         /// <summary>
-        /// Sends pitch to the server so it may be forwarded to spectators.
+        /// 发送到服务器，服务器转发到其他玩家
         /// </summary>
         [ServerRpc]
         private void CmdSendSpectatorPitch(float pitch, Channel c = Channel.Unreliable)
@@ -188,8 +183,6 @@ namespace FirstGearGames.FPSLand.Characters.Motors
                 Quaternion rot = Quaternion.LookRotation(_thirdPersonHipBone.position - (_thirdPersonHipBone.position + new Vector3(0f, 1.5f, 0f)));
                 _lookDirection = Quaternion.RotateTowards(Quaternion.Euler(_lookDirection), rot, 180f * Time.deltaTime).eulerAngles;
             }
-
-            _lookDirection += _lookDirectionOffset;
         }
 
         /// <summary>

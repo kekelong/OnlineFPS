@@ -26,13 +26,6 @@ namespace FPS.Lobby
         public PlayerSettings PlayerSettings { get; private set; }
         #endregion
 
-        #region Constants.
-        /// <summary>
-        /// Version of this build.
-        /// </summary>
-        private const int VERSION_CODE = 0;
-        #endregion
-
         private void Awake()
         {
             FirstInitialize();
@@ -45,77 +38,31 @@ namespace FPS.Lobby
                 Instance = this;
         }
 
-        /// <summary>
-        /// /// Called when the local player object has been set up.
-        /// </summary>
-        public override void OnStartClient()
-        {
-            base.OnStartClient();
-            if (base.IsOwner)
-                CmdVerifyVersion(VERSION_CODE);
-        }
 
-        /// <summary>
-        /// Initializes this script for use. Should only be completed once.
-        /// </summary>
         private void FirstInitialize()
         {
             PlayerSettings = GetComponent<PlayerSettings>();
         }
 
         /// <summary>
-        /// Returns the current client instance for the connection.
+        /// 返回连接的当前客户端实例。
         /// </summary>
         /// <returns></returns>
         public static ClientInstance ReturnClientInstance(NetworkConnection conn)
         {
-            /* If server and connection isnt null.
-             * When trying to access as server connection
-             * will always contain a value. But if client it will be
-             * null. */
+
             if (InstanceFinder.IsServer && conn != null)
             {
                 NetworkObject nob = conn.FirstObject;
                 return (nob == null) ? null : nob.GetComponent<ClientInstance>();
             }
-            //If not server or connection is null, then is client.
             else
             {
                 return Instance;
             }
         }
 
-        /// <summary>
-        /// Verifies with the server the client version.
-        /// </summary>
-        /// <param name="versionCode"></param>
-        [ServerRpc]
-        private void CmdVerifyVersion(int versionCode)
-        {
-            bool pass = (versionCode == VERSION_CODE);
-            TargetVerifyVersion(base.Owner, pass);
-
-            //If not pass then find offending client and give them the boot.
-            if (!pass)
-                base.NetworkManager.TransportManager.Transport.StopConnection(base.Owner.ClientId, false);
-        }
-
-
-        /// <summary>
-        /// Response from server if version matches.
-        /// </summary>
-        /// <param name="pass"></param>
-        [TargetRpc]
-        private void TargetVerifyVersion(NetworkConnection conn, bool pass)
-        {
-            Initialized = pass;
-            if (!pass)
-            {
-                base.NetworkManager.ClientManager.StopConnection();
-
-                Debug.LogWarning("Your executable is out of date. Please update.");
-            }
-        }
+  
     }
 
 }

@@ -22949,7 +22949,7 @@ MonoBehaviour:
   _timingType: 0
   _allowTickDropping: 0
   _maximumFrameTicks: 2
-  _tickRate: 30
+  _tickRate: 120
   _pingInterval: 1
   _physicsMode: 1
 --- !u!114 &4888681332591841669

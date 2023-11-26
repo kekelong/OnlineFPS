@@ -7,9 +7,7 @@ using System.Threading.Tasks;
 
 namespace FPS.Game.Network
 {
-    /// <summary>
-    /// To be attached to the client instance prefab to know when it's instantiated for owner.
-    /// </summary>
+
     public class ClientInstanceAnnouncer : NetworkBehaviour
     {
 

@@ -29,6 +29,7 @@ namespace FPS.Lobby
             if (base.IsOwner)
                 OnLocalPlayerUpdated?.Invoke(base.NetworkObject);
         }
+
         private void OnDisable()
         {
             if (base.IsOwner)

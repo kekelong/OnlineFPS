@@ -7,7 +7,7 @@ namespace FirstGearGames.FPSLand.Characters.Bodies
 {
 
     /// <summary>
-    /// Changes visibility of body gameObject based on ownership.
+    /// 根据所有权（第一人称和第三人称）更改游戏对象的可见性。
     /// </summary>
     public class SetBodyPerspective : NetworkBehaviour
     {
@@ -34,7 +34,6 @@ namespace FirstGearGames.FPSLand.Characters.Bodies
         public override void OnStartClient()
         {
             base.OnStartClient();
-
             NetworkInitialize();
             DisableOwnerShadows();
             ShowAliveBodies();
@@ -70,7 +69,7 @@ namespace FirstGearGames.FPSLand.Characters.Bodies
         }
 
         /// <summary>
-        /// Configures shadows and visibility on renderers based on client and server roles.
+        /// 根据客户端和服务器角色配置渲染器上的阴影和可见性。
         /// </summary>
         private void DisableOwnerShadows()
         {
@@ -105,7 +104,7 @@ namespace FirstGearGames.FPSLand.Characters.Bodies
         }
 
         /// <summary>
-        /// Shows bodies and renderers for when there is health remaining.
+        /// 显示剩余健康值时的身体和渲染器。
         /// </summary>
         public void ShowAliveBodies()
         {
@@ -147,7 +146,7 @@ namespace FirstGearGames.FPSLand.Characters.Bodies
         }
 
         /// <summary>
-        /// Shows bodies and renderers for when health is depleted.
+        /// 死亡时，显示身体。
         /// </summary>
         private void ShowDeadBodies()
         {
@@ -181,10 +180,8 @@ namespace FirstGearGames.FPSLand.Characters.Bodies
                     _bodiesConfigurations.ThirdPersonObject.SetActive(true);
                 }
             }
-            /* Does not have authority. No additional action is needed
-             * if player doesn't have authority as third person is already
-             * shown. */
-            else { }
+            //如果没有权限，则不需要采取任何额外操作，因为第三人称已经显示。
+            
         }
 
     }

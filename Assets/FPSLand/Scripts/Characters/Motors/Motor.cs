@@ -16,7 +16,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
 {
 
     /// <summary>
-    /// Controls server authoritative movement.
+    /// 服务器权威 控制移动。客户端预测
     /// </summary>
     public class Motor : NetworkBehaviour
     {
@@ -153,6 +153,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         {
             this.enabled = false;
         }
+
         /// <summary>
         /// 当网络初始化该对象时调用。可能会为服务器或客户端调用，但只会调用一次
         /// 当作为主机或服务器时，此方法将在OnStartServer之前运行。
@@ -162,7 +163,34 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         {
             base.OnStartNetwork();
             base.TimeManager.OnTick += TimeManager_OnTick;
+
+            //是本地客户端或服务器
             NetworkInitialize(base.Owner.IsLocalClient || base.IsServer);
+        }
+
+        /// <summary>
+        /// 初始化，具有权限的用户或服务器使用。
+        /// </summary>
+        private void NetworkInitialize(bool authoritiveOrServer)
+        {
+            _controller = GetComponent<CharacterController>();
+            if (authoritiveOrServer)
+            {
+                _weaponHandler = GetComponent<WeaponHandler>();
+                _animatorController = GetComponent<AnimatorController>();
+                _defaultStepOffset = _controller.stepOffset;
+
+                Health health = GetComponent<Health>();
+                health.OnDeath += Health_OnDeath;
+                health.OnRespawned += Health_OnRespawned;
+            }
+            else
+            {
+                _controller.enabled = false;
+            }
+
+            //激活
+            this.enabled = true;
         }
 
         public override void OnStopNetwork()
@@ -197,7 +225,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
                 Replicate(default, true);
                 ReconcileData rd = new ReconcileData(transform.position, _verticalVelocity, _externalForces);
                 Reconcile(rd, true);
-                //发送运行状态到其他客户端，以便他们可以在本地播放运行的vfx/声音。
+                //发送运行状态到其他客户端，以便他们可以在本地播放奔跑的声音。
                 ObserversSetRunning(_running);
             }
         }
@@ -222,7 +250,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
 
 
         /// <summary>
-        /// Checks if landing audio should be played on owner.
+        /// 检查是否应该在 owner 上播放落地音频。
         /// </summary>
         /// <param name="groundedChanged"></param>
         private void CheckPlayLandedAudio()
@@ -231,37 +259,15 @@ namespace FirstGearGames.FPSLand.Characters.Motors
                 return;
             _groundedChanged = false;
 
-            //If velocity was low enough then play audio.
+            //如果速度足够低，则播放音频。
             if (_verticalVelocity < -5f)
                 PlayLandingAudio();
         }
 
-        /// <summary>
-        /// Initializes this script for anyone with authority or if the server.
-        /// </summary>
-        private void NetworkInitialize(bool authoritiveOrServer)
-        {
-            _controller = GetComponent<CharacterController>();
-            if (authoritiveOrServer)
-            {
-                _weaponHandler = GetComponent<WeaponHandler>();
-                _animatorController = GetComponent<AnimatorController>();
-                _defaultStepOffset = _controller.stepOffset;
 
-                Health health = GetComponent<Health>();
-                health.OnDeath += Health_OnDeath;
-                health.OnRespawned += Health_OnRespawned;
-            }
-            else
-            {
-                _controller.enabled = false;
-            }
-
-            this.enabled = true;
-        }
 
         /// <summary>
-        /// Plays audio used for landing. Broadcast to other players afterwards.
+        /// 播放用于着陆的音频。之后广播给其他玩家。
         /// </summary>
         private void PlayLandingAudio()
         {
@@ -270,7 +276,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
                 return;
             _lastLandAudioTime = Time.time;
 
-            //If not server only then play audio.
+            //如果不只有服务器（说明是 host / client ），则播放音频。
             if (!base.IsServerOnly)
             {
                 //First person if owner.
@@ -293,10 +299,9 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         [ObserversRpc]
         private void ObserversPlayLandingAudio()
         {
-            //Ignore if owner or server as it was played locally.
+            //如果所有者或服务器不播放，
             if (base.IsOwner || base.IsServer)
                 return;
-
             PlayLandingAudio();
         }
 
@@ -320,28 +325,26 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         }
 
         /// <summary>
-        /// Sets velocity to 0f when grounded.
+        /// 当在地面上时，将速度设置为0f。
         /// </summary>
         private void SetGroundedVelocity(float deltaTime, bool asServer, bool replaying)
         {
-            /* Rapidly reduce gravity when grounded so falls aren't sudden when moving
-             * off edges. Also move towards this gravity amount over time so gravity
-             * isn't immediately reset upon landing, but rather is gradually to
-             * give the impression of losing momentum. */
+            /* 在角色落地时快速减小重力，以避免在移动到边缘时突然下落。
+             * 同时，在角色着陆后逐渐向这个重力值靠近，而不是立即重置重力，以给角色失去动量的感觉。
+             */
             if (_controller.isGrounded && _verticalVelocity < -1f)
                 _verticalVelocity = Mathf.MoveTowards(_verticalVelocity, -1f, (-Physics.gravity.y * GRAVITY_MULTIPLIER * 2f) * deltaTime);
         }
 
         /// <summary>
-        /// Received when the character controller hits an object during move.
+        /// 当角色控制器在移动过程中碰到物体。
         /// </summary>
-        /// <param name="hit"></param>
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            //Cancel jump velocity if hitting something above.
+            //如果碰到上方的物体，取消跳跃速度。
             if (_verticalVelocity > 0f && hit.moveDirection.y > 0f)
             {
-                //If hit is above middle of character controller it's safe to assume it's above.
+                //如果碰撞点在角色控制器的中间以上，可以安全地假设它在上方
                 if (hit.point.y > transform.position.y + (_controller.height / 2f))
                     _verticalVelocity = 0f;
             }
@@ -386,7 +389,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         /// <summary>
         /// Sets the layer for Hitboxes.
         /// </summary>
-        /// <param name="toIgnore">True to set to ignorePhysics, false to set to default.</param>
+        /// <param name="toIgnore">如果为真，则设置为忽略物理；如果为假，则设置为默认值。</param>
         private void SetCharacterLayer(bool toIgnore)
         {
             int layer = (toIgnore) ?
@@ -397,13 +400,12 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         }
 
         /// <summary>
-        /// Conditionally adjust steps height.
+        /// 有条件地调整步幅高度。
         /// </summary>
         private void SetStepOffset()
         {
-            /* Don't allow stepping when in the air. This is so the client cannot step up on cliffs when falling in front of them.
-             * This is an issue with the unity character controller that would maybe be good for ledge grabbing, but not for
-             * a FPS game. */
+            /*当在空中时不允许跳跃。这是为了防止客户端在掉落到悬崖前跳上去。
+             * 这是一个Unity角色控制器的问题，可能适合用于攀爬悬崖，但不适合用于第一人称射击游戏。*/
             _controller.stepOffset = (_isGrounded && _verticalVelocity <= 0f) ? _defaultStepOffset : 0f;
         }
 
@@ -418,7 +420,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         }
 
         /// <summary>
-        /// Dampens current external forces.
+        /// 抑制当前外力。
         /// </summary>
         private void DampenExternalForces(float deltaTime)
         {
@@ -454,7 +456,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         {
             _verticalVelocity = _jumpHeight;
 
-            //Only increase time and unset jump if not replay.
+            //if not replay.，则只增加时间并取消跳跃。
             if (!replaying)
             {
                 _jump = false;
@@ -465,7 +467,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
 
 
         /// <summary>
-        /// Returns true if a blocked direction. Can be true when moving against a path the controller shouldn't allow.
+        /// 如果方向被阻挡，返回true。当控制器不应该允许移动的路径上遇到阻碍时，可能为真。
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>

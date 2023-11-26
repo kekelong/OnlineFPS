@@ -3,12 +3,13 @@ using FirstGearGames.FPSLand.Managers.Gameplay;
 using FishNet.Connection;
 using FishNet.Managing.Logging;
 using FishNet.Object;
-using FPS.Game.Managers;
 using System;
 using UnityEngine;
 
 namespace FPS.Game.Clients
 {
+    //游戏玩家生成方法
+    //
     public class PlayerSpawner : NetworkBehaviour
     {
         #region Types.
@@ -21,27 +22,25 @@ namespace FPS.Game.Clients
 
         #region Public.
         /// <summary>
-        /// Dispatched when the character is updated.
+        /// 当角色更新时调用。
         /// </summary>
         public static event Action<GameObject> OnCharacterUpdated;
         /// <summary>
-        /// Data about the currently spawned player.
+        /// 当前生成的玩家数据。
         /// </summary>
         public PlayerData SpawnedCharacterData { get; private set; } = new PlayerData();
         #endregion
 
         #region Serialized.
         /// <summary>
-        /// Character prefab to spawn.
+        /// Character prefab。
         /// </summary>
         [Tooltip("Character prefab to spawn.")]
         [SerializeField]
         private GameObject _characterPrefab;
         #endregion
 
-        /// <summary>
-        /// Tries to respawn the player.
-        /// </summary>
+
         [Client(Logging = LoggingType.Off)]
         public void TryRespawn()
         {
@@ -49,7 +48,7 @@ namespace FPS.Game.Clients
         }
 
         /// <summary>
-        /// Sets up SpawnedCharacterData using a gameObject.
+        /// 设置玩家数据
         /// </summary>
         /// <param name="go"></param>
         private void SetupSpawnedCharacterData(GameObject go)
@@ -60,7 +59,7 @@ namespace FPS.Game.Clients
 
 
         /// <summary>
-        /// Request a respawn from the server.
+        /// 服务器调用
         /// </summary>
         [ServerRpc]
         private void CmdRespawn()
@@ -73,7 +72,7 @@ namespace FPS.Game.Clients
             }
             else
             {
-                //If the character is not spawned yet.
+                //如果角色尚未生成。
                 if (SpawnedCharacterData.NetworkObject == null)
                 {
                     GameObject r = Instantiate(_characterPrefab, spawn.position, Quaternion.Euler(0f, spawn.eulerAngles.y, 0f));
@@ -82,22 +81,22 @@ namespace FPS.Game.Clients
                     SetupSpawnedCharacterData(r);
                     TargetCharacterSpawned(base.Owner, SpawnedCharacterData.NetworkObject);
                 }
-                //Character is already spawned.
+                //角色已经生成。刷新属性
                 else
                 {
                     SpawnedCharacterData.NetworkObject.transform.position = spawn.position;
                     SpawnedCharacterData.NetworkObject.transform.rotation = Quaternion.Euler(0f, spawn.eulerAngles.y, 0f);
-                    Physics.SyncTransforms();
+                    Physics.SyncTransforms();//同步物理引擎
                     //Restore health and set respawned.
-                    //SpawnedCharacterData.Health.RestoreHealth();
-                    //SpawnedCharacterData.Health.Respawned();
+                    SpawnedCharacterData.Health.RestoreHealth();
+                    SpawnedCharacterData.Health.Respawned();
                 }
 
             }
         }
 
         /// <summary>
-        /// Received when the server has spawned the character.
+        /// 当服务器生成角色时接收。
         /// </summary>
         /// <param name="character"></param>
         [TargetRpc]
@@ -106,7 +105,7 @@ namespace FPS.Game.Clients
             GameObject playerObj = (character == null) ? null : playerObj = character.gameObject;
             OnCharacterUpdated?.Invoke(playerObj);
 
-            //If player was spawned.
+            //如果玩家被生成。
             if (playerObj != null)
                 SetupSpawnedCharacterData(character.gameObject);
         }

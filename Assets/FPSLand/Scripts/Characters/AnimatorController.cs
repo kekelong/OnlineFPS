@@ -6,18 +6,21 @@ using UnityEngine;
 
 namespace FirstGearGames.FPSLand.Characters.Motors
 {
+    /// <summary>
+    /// 控制角色动画相关，暴露对外的调用接口
+    /// </summary>
     public class AnimatorController : NetworkBehaviour
     {
-       
+
         #region Serialized.
         /// <summary>
-        /// Animator used for first person.
+        /// 第一人称的 Animator
         /// </summary>
         [Tooltip("Animator used for first person.")]
         [SerializeField]
         private Animator _firstPersonAnimator;
         /// <summary>
-        /// Animator used for third person.
+        /// 第三人的 Animator
         /// </summary>
         [Tooltip("Animator used for third person.")]
         [SerializeField]
@@ -38,6 +41,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         /// <summary>
         /// Current pitch to move towards.
         /// </summary>
+        /// 不可靠，传输速率，更新到那些客户度（除了自己）  
         [SyncVar(Channel = Channel.Unreliable, SendRate = 0.02f, ReadPermissions = ReadPermission.ExcludeOwner)]
         private float _pitch;
         /// <summary>
@@ -48,6 +52,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         /// <summary>
         /// Current weapon index.
         /// </summary>
+        /// OnChange ---- 值更改时将在服务器和客户端上调用的方法。
         [SyncVar(OnChange =  nameof(OnWeaponIndex), Channel = Channel.Reliable, SendRate = 0.02f, ReadPermissions = ReadPermission.ExcludeOwner)]
         private int _weaponIndex = -1;
 
@@ -73,7 +78,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         }
 
         /// <summary>
-        /// Received when character is respawned.
+        /// 当角色重生时回调
         /// </summary>
         private void Health_OnRespawned()
         {
@@ -84,7 +89,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         }
 
         /// <summary>
-        /// Received when character is dead.
+        /// 死亡
         /// </summary>
         private void Health_OnDeath()
         {
@@ -96,19 +101,17 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         }
 
         /// <summary>
-        /// 平滑，不能突然改变。
+        /// 平滑插值属性
         /// </summary>
         private void SmoothFloats()
         {
             float deltaTime = Time.deltaTime;
 
-            //Distance from targets.
+            //目标的距离。
             float distance;
-            //Float reused for current float values.
+            
             float currentF;
 
-            /* If a client host this needs to run twice. Once for 
-             * client fp arms and again for third person. */
             Animator[] animators = ReturnAnimators();
 
             for (int i = 0; i < animators.Length; i++)
@@ -116,7 +119,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
                 if (animators[i] == null)
                     continue;
 
-                //Only smooth if third person.
+                // 仅针对第三人称模型
                 if (animators[i] == _thirdPersonAnimator)
                 {
                     /* TargetDirection. */
@@ -173,11 +176,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
         /// </summary>
         private void OnWeaponIndex(int prev, int next, bool asServer)
         {
-            /* If index is already the same then exit.
-             * This is caused by clientHost running logic
-             * before server. */
-            //if (asServer && (next == prev))
-            //    return;
+ 
             if (!asServer && base.IsServer && !base.IsOwner)
                 return;
             if (prev == next)
@@ -272,10 +271,11 @@ namespace FirstGearGames.FPSLand.Characters.Motors
                 return;
 
             Jump();
-        }      
+        }
 
         /// <summary>
-        /// Returns animators to use as an array. May contain multiple animators if acting as a client host.
+        /// 返回要使用的动画器数组。如果作为client host.，则可能包含多个动画器。
+        /// 本项目采用CS分离，不存在Client host.
         /// </summary>
         /// <returns></returns>
         private Animator[] ReturnAnimators()
@@ -283,7 +283,7 @@ namespace FirstGearGames.FPSLand.Characters.Motors
             //Just client or server, only need default animator.
             if (base.IsClientOnly || base.IsServerOnly)
                 return new Animator[] { ReturnAnimator() };
-            //Client host.
+            // Client host.
             else
                 return new Animator[] { _firstPersonAnimator, _thirdPersonAnimator };
         }

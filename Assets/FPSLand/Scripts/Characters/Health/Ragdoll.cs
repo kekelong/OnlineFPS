@@ -10,7 +10,7 @@ namespace FirstGearGames.FPSLand.Characters.Vitals
     {
         #region Types.
         /// <summary>
-        /// Stores local space information of a rigidbody.
+        /// 保存 local space 的 rigidbody 信息
         /// </summary>
         private class RigidbodySpace
         {
@@ -103,7 +103,6 @@ namespace FirstGearGames.FPSLand.Characters.Vitals
             for (int i = 0; i < _rigidbodies.Length; i++)
                 _rigidbodies[i].isKinematic = kinematic;
         }
-
     }
 
 

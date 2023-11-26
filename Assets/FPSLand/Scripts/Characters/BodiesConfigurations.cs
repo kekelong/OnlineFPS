@@ -4,14 +4,11 @@ namespace FirstGearGames.FPSLand.Characters.Bodies
 {
 
     /// <summary>
-    /// Changes visibility of body gameObject based on ownership.
+    /// 根据所有权（第一人称和第三人称）更改游戏对象的可见性。
     /// </summary>
     public class BodiesConfigurations : MonoBehaviour
     {
 
-        /// <summary>
-        /// 
-        /// </summary>
         [Tooltip("GameObjects to enabled as first person.")]
         [SerializeField]
         private GameObject _firstPersonObject;
@@ -20,9 +17,7 @@ namespace FirstGearGames.FPSLand.Characters.Bodies
         /// </summary>
         public GameObject FirstPersonObject { get { return _firstPersonObject; } }
 
-        /// <summary>
-        /// 
-        /// </summary>
+
         [Tooltip("GameObjects to enabled as third person.")]
         [SerializeField]
         private GameObject _thirdPersonObject;

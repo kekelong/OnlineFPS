@@ -6,18 +6,13 @@ using UnityEngine;
 using FirstGearGames.FPSLand.Network;
 using GameKit.Utilities;
 using UnityEngine.EventSystems;
+using FPS.Lobby;
 
 namespace FirstGearGames.FPSLand.Managers.Gameplay.Canvases
 {
 
     public class RespawnCanvas : MonoBehaviour
     {
-        #region Serialized.
-        /// <summary>
-        /// PlayerSpawner in the scene.
-        /// </summary>
-        private PlayerSpawner _playerSpawner;
-        #endregion
 
         #region Private.
         /// <summary>
@@ -28,7 +23,7 @@ namespace FirstGearGames.FPSLand.Managers.Gameplay.Canvases
 
         private void Awake()
         {
-            ClientInstanceAnnouncer.OnPlayerUpdated += ClientInstanceAnnouncer_OnUpdated;
+            FPS.Game.Network.ClientInstanceAnnouncer.OnPlayerUpdated += ClientInstanceAnnouncer_OnUpdated;
             PlayerSpawner.OnCharacterUpdated += PlayerSpawner_OnCharacterUpdated;
             _canvasGroup = GetComponent<CanvasGroup>();
             _canvasGroup.SetActive(false, true);
@@ -51,7 +46,6 @@ namespace FirstGearGames.FPSLand.Managers.Gameplay.Canvases
             {
                 SetCursorVisibility(false);
                 PlayerInstance ci = obj.GetComponent<PlayerInstance>();
-                _playerSpawner = ci.PlayerSpawner;
             }
         }
 
@@ -103,7 +97,8 @@ namespace FirstGearGames.FPSLand.Managers.Gameplay.Canvases
         /// </summary>
         public void OnClick_Respawn()
         {
-            _playerSpawner.TryRespawn();
+            LobbyNetwork.LeaveRoom();
+            LobbyNetwork._instance.LobbyWindowsManager.SetLobbyWindowsVisible(true);
 #if !ENABLE_INPUT_SYSTEM
             /* Deselect any canvas because when the respawn canvas
              * disappears it sometimes defaults to the server / client

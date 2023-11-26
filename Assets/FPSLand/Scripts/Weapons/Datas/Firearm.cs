@@ -4,6 +4,7 @@ using FirstGearGames.FPSLand.Managers.Gameplay;
 using FirstGearGames.FPSLand.Network;
 using FirstGearGames.Managers.Global;
 using FishNet.Managing.Timing;
+using FPS.Game.Clients;
 using GameKit.CameraShakers;
 using GameKit.Utilities;
 using GameKit.Utilities.ObjectPooling;
@@ -239,13 +240,13 @@ namespace FirstGearGames.FPSLand.Weapons
             /* These checks are gross but it alleviates
             * creating a chain of references. */
             //Check to make sure local player exist.
-            if (ClientInstance.Instance == null || ClientInstance.Instance.PlayerSpawner == null || ClientInstance.Instance.PlayerSpawner.SpawnedCharacterData.NetworkObject == null)
+            if (PlayerInstance.Instance == null || PlayerInstance.Instance.PlayerSpawner == null || PlayerInstance.Instance.PlayerSpawner.SpawnedCharacterData.NetworkObject == null)
                 return;
             //Local player is dead.
-            if (ClientInstance.Instance.PlayerSpawner.SpawnedCharacterData.Health.CurrentHealth <= 0)
+            if (PlayerInstance.Instance.PlayerSpawner.SpawnedCharacterData.Health.CurrentHealth <= 0)
                 return;
 
-            Transform localCharacter = ClientInstance.Instance.PlayerSpawner.SpawnedCharacterData.NetworkObject.transform;
+            Transform localCharacter = PlayerInstance.Instance.PlayerSpawner.SpawnedCharacterData.NetworkObject.transform;
 
             //Approximation of player height.
             float playerHeight = 1.7f;

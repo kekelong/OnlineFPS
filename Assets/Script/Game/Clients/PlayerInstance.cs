@@ -23,28 +23,23 @@ namespace FPS.Game.Clients
             {
                 Instance = this;
                 PlayerSpawner = GetComponent<PlayerSpawner>();
+                //生成具体的角色
                 PlayerSpawner.TryRespawn();
             }
         }
 
             
 
-        /// <summary>
-        /// Returns the current client instance for the connection.
-        /// </summary>
-        /// <returns></returns>
+
         public static PlayerInstance ReturnClientInstance(NetworkConnection conn)
         {
-            /* If server and connection isnt null.
-             * When trying to access as server connection
-             * will always contain a value. But if client it will be
-             * null. */
+
             if (InstanceFinder.IsServer && conn != null)
             {
                 NetworkObject nob = conn.FirstObject;
                 return (nob == null) ? null : nob.GetComponent<PlayerInstance>();
             }
-            //If not server or connection is null, then is client.
+
             else
             {
                 return Instance;

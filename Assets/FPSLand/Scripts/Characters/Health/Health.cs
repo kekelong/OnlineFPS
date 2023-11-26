@@ -162,19 +162,18 @@ namespace FirstGearGames.FPSLand.Characters.Vitals
 
 
         /// <summary>
-        /// Sent to clients to remove a portion of health.
+        /// 发送给客户以扣除生命值。
         /// </summary>
         /// <param name="value"></param>
         [ObserversRpc]
         private void ObserversRemoveHealth(int value, int priorHealth)
         {
-            //Server already removed health. If we don't exit this will be an endless loop. This is for client host.
+            //服务器已经删除了生命值。如果不退出，这将是一个无限循环。这是client host.
             if (base.IsServer)
                 return;
 
-            /* Set current health to prior health so that
-             * in case client somehow magically got out of sync
-             * this will fix it before trying to remove health. */
+            /* 将当前健康值设置为先前的健康值，以防客户端以某种方式意外地失去同步
+             * 在尝试删除健康值之前，这将修复它。*/
             CurrentHealth = priorHealth;
 
             RemoveHealth(value);

@@ -29,7 +29,7 @@ namespace FPS.Lobby
         }
 
         /// <summary>
-        /// Called when the local server state changes.
+        ///在本地服务器连接状态发生变化后调用。
         /// </summary>
         private void ServerManager_OnServerConnectionState(ServerConnectionStateArgs obj)
         {
@@ -37,10 +37,11 @@ namespace FPS.Lobby
                 return;
             if (!_networkManager.ServerManager.OneServerStarted())
                 return;
-
+            Debug.Log("生成_lobbyNetworkPrefab");
             NetworkObject nob = Instantiate(_lobbyNetworkPrefab);
             Scene scene = UnitySceneManager.GetSceneByName("Main");
             UnitySceneManager.MoveGameObjectToScene(nob.gameObject, scene);
+            //通过网络生成一个对象。只能在服务器上调用。
             _networkManager.ServerManager.Spawn(nob.gameObject);
         }
 

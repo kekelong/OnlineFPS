@@ -98,7 +98,10 @@ namespace FPS.Lobby
         /// Reference to LobbyWindowsManager.
         /// </summary>
         [Tooltip("Reference to LoobyWindowsManager.")]
-        protected LobbyWindowsManager LobbyWindowsManager;
+        protected LobbyWindowsManager _lobbyWindowsManager;
+
+
+        public LobbyWindowsManager LobbyWindowsManager { get { return _lobbyWindowsManager; } }
         /// <summary>
         /// GameSceneConfigurations to get loading scenes from.
         /// </summary>
@@ -119,7 +122,7 @@ namespace FPS.Lobby
         /// <summary>
         /// Singleton instance to this script.
         /// </summary>
-        private static LobbyNetwork _instance;
+        public static LobbyNetwork _instance;
         #endregion
 
 
@@ -148,14 +151,14 @@ namespace FPS.Lobby
         {
             _instance = this;
             //Find LobbyWindowsManager.
-            LobbyWindowsManager = GameObject.FindObjectOfType<LobbyWindowsManager>();
-            if (LobbyWindowsManager == null)
+            _lobbyWindowsManager = GameObject.FindObjectOfType<LobbyWindowsManager>();
+            if (_lobbyWindowsManager == null)
             {
                 Debug.LogError("LobbyCanvases script not found. LobbyNetwork cannot initialize.");
                 return;
             }
 
-            LobbyWindowsManager.FirstInitialize();
+            _lobbyWindowsManager.FirstInitialize();
             InstanceFinder.SceneManager.OnClientLoadedStartScenes += SceneManager_OnClientLoadedStartScenes;
             InstanceFinder.ClientManager.OnClientConnectionState += ClientManager_OnClientConnectionState;
             InstanceFinder.ServerManager.OnServerConnectionState += ServerManager_OnServerConnectionState;
@@ -231,7 +234,7 @@ namespace FPS.Lobby
                 if (s != gameObject.scene)
                     UnitySceneManager.UnloadSceneAsync(s);
             }
-            LobbyWindowsManager.SetLobbyWindowsVisible(false);
+            _lobbyWindowsManager.SetLobbyWindowsVisible(false);
         }
 
 
@@ -328,7 +331,7 @@ namespace FPS.Lobby
          * Perhaps it's because LobbyNetwork is server owned?. */
         private void ClientReset()
         {
-            LobbyWindowsManager.Reset();
+            _lobbyWindowsManager.Reset();
             CurrentRoom = null;
             //Can be null if stopping server.
             ClientInstance ci = ClientInstance.ReturnClientInstance(null);
@@ -557,7 +560,7 @@ namespace FPS.Lobby
         [TargetRpc]
         private void TargetSignInSuccess(NetworkConnection conn, string username)
         {
-            LobbyWindowsManager.LoginWindow.LogInSuccess(username);
+            _lobbyWindowsManager.LoginWindow.LogInSuccess(username);
         }
 
         /// <summary>
@@ -570,7 +573,7 @@ namespace FPS.Lobby
         {
             if (failedReason == string.Empty)
                 failedReason = "Sign in failed.";
-            LobbyWindowsManager.LoginWindow.LogInFailed(failedReason);
+            _lobbyWindowsManager.LoginWindow.LogInFailed(failedReason);
         }
 
 
@@ -664,8 +667,8 @@ namespace FPS.Lobby
         private void TargetCreateRoomSuccess(NetworkConnection conn, RoomDetails roomDetails)
         {
             CurrentRoom = roomDetails;
-            LobbyWindowsManager.CreateRoomWindow.RoomCreatedSuccess();
-            LobbyWindowsManager.RoomWindow.RoomCreatedSuccess(roomDetails);
+            _lobbyWindowsManager.CreateRoomWindow.RoomCreatedSuccess();
+            _lobbyWindowsManager.RoomWindow.RoomCreatedSuccess(roomDetails);
             //Also send member joined to self.
             MemberJoined(InstanceFinder.ClientManager.Connection.FirstObject);
         }
@@ -677,7 +680,7 @@ namespace FPS.Lobby
         private void TargetCreateRoomFailed(NetworkConnection conn, string failedReason)
         {
             CurrentRoom = null;
-            LobbyWindowsManager.CreateRoomWindow.RoomCreatedFailed(failedReason);
+            _lobbyWindowsManager.CreateRoomWindow.RoomCreatedFailed(failedReason);
         }
         #endregion
 
@@ -828,8 +831,8 @@ namespace FPS.Lobby
         private void TargetJoinRoomSuccess(NetworkConnection conn, RoomDetails roomDetails)
         {
             CurrentRoom = roomDetails;
-            LobbyWindowsManager.LobbyWindow.RoomJoinedSuccess(roomDetails);
-            LobbyWindowsManager.RoomWindow.RoomJoinedSuccess(roomDetails);
+            _lobbyWindowsManager.LobbyWindow.RoomJoinedSuccess(roomDetails);
+            _lobbyWindowsManager.RoomWindow.RoomJoinedSuccess(roomDetails);
         }
         /// <summary>
         /// Called when failed to join a room.
@@ -840,7 +843,7 @@ namespace FPS.Lobby
         private void TargetJoinRoomFailed(NetworkConnection conn, string failedReason)
         {
             CurrentRoom = null;
-            LobbyWindowsManager.LobbyWindow.RoomJoinedFailed(failedReason);
+            _lobbyWindowsManager.LobbyWindow.RoomJoinedFailed(failedReason);
 
         }
         #endregion
@@ -908,7 +911,7 @@ namespace FPS.Lobby
         [TargetRpc]
         private void TargetLeaveRoomSuccess(NetworkConnection conn)
         {
-            LobbyWindowsManager.RoomWindow.RoomLeftSuccess();
+            _lobbyWindowsManager.RoomWindow.RoomLeftSuccess();
         }
         /// <summary>
         /// Called after failing to leave a room.
@@ -916,7 +919,7 @@ namespace FPS.Lobby
         [TargetRpc]
         private void TargetLeaveRoomFailed(NetworkConnection conn)
         {
-            LobbyWindowsManager.RoomWindow.RoomLeftFailed();
+            _lobbyWindowsManager.RoomWindow.RoomLeftFailed();
         }
 
         /// <summary>
@@ -951,7 +954,7 @@ namespace FPS.Lobby
             if (OnCanKickMember(CurrentRoom, InstanceFinder.ClientManager.Connection.FirstObject, target, ref failedReason))
                 CmdKickMember(target);
             else
-                LobbyWindowsManager.NotificationMessage(failedReason);
+                _lobbyWindowsManager.NotificationMessage(failedReason);
         }
 
         /// <summary>
@@ -1024,7 +1027,7 @@ namespace FPS.Lobby
         [TargetRpc]
         private void TargetKickMemberSuccess(NetworkConnection conn)
         {
-            LobbyWindowsManager.RoomWindow.ProcessKickMemberSuccess();
+            _lobbyWindowsManager.RoomWindow.ProcessKickMemberSuccess();
            
         }
         /// <summary>
@@ -1036,7 +1039,7 @@ namespace FPS.Lobby
         {
             if (failedReason == string.Empty)
                 failedReason = "Kick failed.";
-            LobbyWindowsManager.RoomWindow.ProcessKickMemberFailed(failedReason);
+            _lobbyWindowsManager.RoomWindow.ProcessKickMemberFailed(failedReason);
         }
 
         #endregion
@@ -1130,7 +1133,7 @@ namespace FPS.Lobby
             }
 
             ///ready
-            ///
+
             //Not enough members to start room.
             if (roomDetails.MemberIds.Count < 1)
             {
@@ -1161,11 +1164,7 @@ namespace FPS.Lobby
                 readyPlayers = _clientReadyPlayers;
             }
 
-            /* In the base class only host can start the room; though, you
-            * very well could override that. For this example we will not,
-            * and it would be redundant to make host ready while also clicking
-            * start. Instead I will check if startingPlayer is host, and if so,
-            * automatically add them to ready players. */
+            //clientId是房主，将其设置为准备好的状态
             if (roomDetails.MemberIds[0] == clientId)
                 SetReady(true, clientId, asServer);
 
@@ -1196,11 +1195,6 @@ namespace FPS.Lobby
         }
 
 
-        /// <summary>
-        /// Called on client when they try to start a game.
-        /// </summary>
-        /// <param name="roomName"></param>
-        /// <param name="playerCount"></param>
         [Client]
         public static void StartGame()
         {
@@ -1229,7 +1223,6 @@ namespace FPS.Lobby
             //If still successful.
             if (success)
             {
-                /* If game has not yet started then set it up. */
                 if (!roomDetails.IsStarted)
                 {
                     //Set started immediately.
@@ -1439,7 +1432,7 @@ namespace FPS.Lobby
         [TargetRpc]
         private void TargetStartGameFailed(NetworkConnection conn, RoomDetails roomDetails, string failedReason)
         {
-            LobbyWindowsManager.RoomWindow.ShowStartGame(false, roomDetails, failedReason);
+            _lobbyWindowsManager.RoomWindow.ShowStartGame(false, roomDetails, failedReason);
         }
 
         /// <summary>
@@ -1451,13 +1444,13 @@ namespace FPS.Lobby
         [TargetRpc]
         private void TargetLeaveLobby(NetworkConnection conn, RoomDetails roomDetails)
         {
-            LobbyWindowsManager.RoomWindow.ShowStartGame(true, roomDetails, string.Empty);
+            _lobbyWindowsManager.RoomWindow.ShowStartGame(true, roomDetails, string.Empty);
         }
         #endregion
 
         #region Manage rooms
         /// <summary>
-        /// Returns RoomDetails for roomName.
+        /// 查找 roomName 返回 RoomDetails
         /// </summary>
         /// <param name="roomName"></param>
         /// <returns></returns>
@@ -1516,9 +1509,6 @@ namespace FPS.Lobby
                     TargetMemberLeft(item.Owner, item);
                 }
 
-                /* Removing on server is called after because if the room
-                 * is empty it will be removed. Server has to tidy
-                 * based on room info before it gets wiped out. */
                 //Remove on server.
                 roomDetails.RemoveMember(clientId);
                 ConnectionRooms.Remove(clientId.Owner);
@@ -1530,15 +1520,6 @@ namespace FPS.Lobby
                 {
                     SceneLookupData[] lookups = SceneLookupData.CreateData(roomDetails.Scenes.ToArray());
                     SceneUnloadData sud = new SceneUnloadData(lookups);
-
-                    //UnloadOptions.ServerUnloadModes mode = (InstanceFinder.IsHost) ?
-                    //    UnloadOptions.ServerUnloadModes.KeepUnused :
-                    //    UnloadOptions.ServerUnloadModes.UnloadUnused;
-                    //UnloadOptions options = new UnloadOptions()
-                    //{
-                    //    Mode = mode
-                    //};
-                    //sud.Options = options;
 
                     //If there are scenes to unload then do so.
                     if (lookups.Length > 0)
@@ -1552,12 +1533,11 @@ namespace FPS.Lobby
                 if (!roomDetails.IsStarted || (roomDetails.IsStarted && !roomDetails.LockOnStart))
                     RpcUpdateRooms(new RoomDetails[] { roomDetails });
             }
-
             return roomDetails;
         }
 
         /// <summary>
-        /// Updates rooms on clients. This will be sent to all clients regardless of where they are in the world.
+        /// 更新客户的房间。这将发送给所有客户。
         /// </summary>
         /// <param name="roomDetails"></param>
         [ObserversRpc]
@@ -1577,12 +1557,8 @@ namespace FPS.Lobby
                 }
             }
 
-            /* This runs on clients even if they are in a match. It may
-             * be optimal to only send this to clients which are not in a match,
-             * or ignore if in a match then request room updates upon
-             * leaving the match. */
-             LobbyWindowsManager.RoomWindow.UpdateRoom(roomDetails);
-             LobbyWindowsManager.LobbyWindow.UpdateRooms(roomDetails);
+             _lobbyWindowsManager.RoomWindow.UpdateRoom(roomDetails);
+             _lobbyWindowsManager.LobbyWindow.UpdateRooms(roomDetails);
         }
 
         /// <summary>
@@ -1609,13 +1585,13 @@ namespace FPS.Lobby
         [TargetRpc]
         public void TargetInitialRooms(NetworkConnection conn, RoomDetails[] roomDetails)
         {
-            LobbyWindowsManager.LobbyWindow.UpdateRooms(roomDetails);
+            _lobbyWindowsManager.LobbyWindow.UpdateRooms(roomDetails);
         }
         #endregion     
 
         #region Helpers.
         /// <summary>
-        /// Finds and and outputs the ClientInstance for a connection.
+        /// 寻找并且输出 Connection 的 ClientInstance
         /// </summary>
         /// <param name="conn"></param>
         /// <returns>True if ClientInstnace was found.</returns>

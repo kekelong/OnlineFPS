@@ -4,12 +4,10 @@ using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 using UnityEngine;
 using FPS.Lobby;
 using System.Collections.Generic;
-using System;
-using FirstGearGames.FPSLand.Managers.Gameplay;
-using FirstGearGames.FPSLand.Characters.Vitals;
 
 namespace FPS.Game.Managers
 {
+    //控制房间的玩家的生成和退出
     public class GameplayManager : NetworkBehaviour
     {
         #region Serialized.
@@ -30,6 +28,7 @@ namespace FPS.Game.Managers
         /// </summary>
         private LobbyNetwork _lobbyNetwork = null;
 
+
         /// <summary>
         /// Currently spawned player objects. Only exist on the server.
         /// </summary>
@@ -47,12 +46,8 @@ namespace FPS.Game.Managers
             }
         }
 
-        /// <summary>
-        /// Initializes this script for use.
-        /// </summary>
         public void FirstInitialize(RoomDetails roomDetails, LobbyNetwork lobbyNetwork)
         {
-            Debug.Log("GameplayManager 初始化成功");
             _lobbyWindowsManager = GameObject.FindObjectOfType<LobbyWindowsManager>();
             if (_lobbyWindowsManager == null)
             {
@@ -67,13 +62,13 @@ namespace FPS.Game.Managers
         }
 
         /// <summary>
-        /// Called when a client leaves the room.
+        /// 离开房间时调用
         /// </summary>
         /// <param name="arg1"></param>
         /// <param name="arg2"></param>
         private void LobbyNetwork_OnClientLeftRoom(RoomDetails arg1, NetworkObject arg2)
         {
-            //Destroy all of clients objects, except their client instance.
+
             for (int i = 0; i < _spawnedPlayerObjects.Count; i++)
             {
                 NetworkObject entry = _spawnedPlayerObjects[i];
@@ -93,15 +88,12 @@ namespace FPS.Game.Managers
                     _spawnedPlayerObjects.RemoveAt(i);
                     i--;
                 }
-
             }
         }
 
         /// <summary>
-        /// Called when a client starts a game.
+        /// 当客户端开始游戏时调用。LobbyNetwork调用所有客户端
         /// </summary>
-        /// <param name="roomDetails"></param>
-        /// <param name="client"></param>
         private void LobbyNetwork_OnClientStarted(RoomDetails roomDetails, NetworkObject client)
         {
             //Not for this room.
@@ -110,7 +102,9 @@ namespace FPS.Game.Managers
             //NetIdent is null or not a player.
             if (client == null || client.Owner == null)
                 return;
+            //隐藏大厅房间UI
             SetLobbyWindowsVisible();
+            //服务器生成玩家实例
             SpawnPlayer(client.Owner);
         }
         #endregion
@@ -118,17 +112,17 @@ namespace FPS.Game.Managers
         #region Spawning.
 
         /// <summary>
-        /// Spawns a player at a random position for a connection.
+        /// Spawns  player 
         /// </summary>
-        /// <param name="conn"></param>
         private void SpawnPlayer(NetworkConnection conn)
         {
-            //Make object and move it to proper scene.
+            //生成玩家并且移动到游戏场景
             NetworkObject nob = Instantiate<NetworkObject>(_playerInstancePrefab, transform.position, Quaternion.identity);
             UnitySceneManager.MoveGameObjectToScene(nob.gameObject, gameObject.scene);
             _spawnedPlayerObjects.Add(nob); 
             base.Spawn(nob.gameObject, conn);
         }
+
 
         [ObserversRpc]
         private void SetLobbyWindowsVisible()

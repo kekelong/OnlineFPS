@@ -35,7 +35,6 @@ namespace FPS.Lobby
         {
             return _username;
         }
-
     }
 
 }

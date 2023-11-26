@@ -210,6 +210,7 @@ public class NetworkHudCanvases : MonoBehaviour
             _networkManager.ServerManager.StartConnection();
 
         DeselectButtons();
+        HideCanvas();
     }
 
 
@@ -224,9 +225,13 @@ public class NetworkHudCanvases : MonoBehaviour
             _networkManager.ClientManager.StartConnection();
 
         DeselectButtons();
+        HideCanvas();
     }
 
-
+    public void HideCanvas()
+    {
+        gameObject.SetActive(false);
+    }
     private void SetEventSystem()
     {
 #if !ENABLE_INPUT_SYSTEM

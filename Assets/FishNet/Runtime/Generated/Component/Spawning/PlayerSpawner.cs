@@ -9,15 +9,15 @@ namespace FishNet.Component.Spawning
 {
 
     /// <summary>
-    /// Spawns a player object for clients when they connect.
-    /// Must be placed on or beneath the NetworkManager object.
+    /// 客户端连接时会生成一个玩家对象。
+    /// 必须置于 NetworkManager 对象。
     /// </summary>
     [AddComponentMenu("FishNet/Component/PlayerSpawner")]
     public class PlayerSpawner : MonoBehaviour
     {
         #region Public.
         /// <summary>
-        /// Called on the server when a player is spawned.
+        /// 当玩家生成时在服务器上调用。
         /// </summary>
         public event Action<NetworkObject> OnSpawned;
         #endregion
@@ -82,7 +82,7 @@ namespace FishNet.Component.Spawning
         }
 
         /// <summary>
-        /// Called when a client loads initial scenes after connecting.
+        /// 客户端连接后加载初始场景时调用。服务器调用
         /// </summary>
         private void SceneManager_OnClientLoadedStartScenes(NetworkConnection conn, bool asServer)
         {

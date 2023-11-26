@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8d1b330f90ccf5438f5ad230ad5dba9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _physicsMode: 2
+  _physicsMode: 0
   _scenes:
   - {fileID: 102900000, guid: a8ea65bdf6e0f374c97416b750ab0452, type: 3}
   _sceneNames:
